@@ -34,8 +34,7 @@ export function WorkflowTemplateDetails({history, location, match}: RouteCompone
     const [tab, setTab] = useState<string>(queryParams.get('tab'));
     const [workflows, setWorkflows] = useState<Workflow[]>([]);
     const [columns, setColumns] = useState<models.Column[]>([]);
-
-    const [template, edited, setTemplate, resetTemplate] = useEditableObject<WorkflowTemplate>();
+    const {object: template, setObject: setTemplate, resetObject: resetTemplate, serialization, edited, lang, setLang} = useEditableObject<WorkflowTemplate>();
     const [error, setError] = useState<Error>();
 
     useEffect(
@@ -133,7 +132,20 @@ export function WorkflowTemplateDetails({history, location, match}: RouteCompone
             }}>
             <>
                 <ErrorNotice error={error} />
-                {!template ? <Loading /> : <WorkflowTemplateEditor template={template} onChange={setTemplate} onError={setError} onTabSelected={setTab} selectedTabKey={tab} />}
+                {!template ? (
+                    <Loading />
+                ) : (
+                    <WorkflowTemplateEditor
+                        template={template}
+                        serialization={serialization}
+                        lang={lang}
+                        onLangChange={setLang}
+                        onChange={setTemplate}
+                        onError={setError}
+                        onTabSelected={setTab}
+                        selectedTabKey={tab}
+                    />
+                )}
             </>
             {template && (
                 <SlidingPanel isShown={!!sidePanel} onClose={() => setSidePanel(null)} isMiddle={sidePanel === 'submit'}>
@@ -145,6 +157,7 @@ export function WorkflowTemplateDetails({history, location, match}: RouteCompone
                             entrypoint={template.spec.entrypoint}
                             templates={template.spec.templates || []}
                             workflowParameters={template.spec.arguments.parameters || []}
+                            history={history}
                         />
                     )}
                     {sidePanel === 'share' && <WidgetGallery namespace={namespace} label={'workflows.argoproj.io/workflow-template=' + name} />}
